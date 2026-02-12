@@ -15,7 +15,9 @@ cd 0xJS
 # Install dependencies
 
 ```bash
-pip install google-generativeai python-dotenv requests
+pip install -q -U google-genai
+pip install python-dotenv
+pip install requests
 ```
 
 # Set up environment
@@ -27,7 +29,7 @@ echo "GEMINI_API_KEY=your_api_key_here" > .env
 
 # Quick Start ( One-Liner )
 ```bash
-git clone https://github.com/4osp3l/0xJS.git && cd 0xJS && pip install -r requirements.txt && python main.py
+git clone https://github.com/4osp3l/0xJS.git && cd 0xJS && python main.py
 ```
 
 # Have a Feature Idea ?
