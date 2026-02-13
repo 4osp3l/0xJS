@@ -1,5 +1,5 @@
 # 0xJS
-0xJS is a AI-powered command-line tool that scans JavaScript files for sensitive information. It can identify API keys, credentials, tokens, and other medium to critical severity secrets with high accuracy.
+0xJS is a AI-powered command-line tool that scans JavaScript files for sensitive information. It can identify API keys, credentials, tokens, and other medium to critical severity secrets with high accuracy. It supports URLs/endpoints extraction, as well as minified-JS analysis.
 
 # Prerequisites
 - Python 3.7 or higher
