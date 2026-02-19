@@ -34,7 +34,7 @@ git clone https://github.com/4osp3l/0xJS.git && cd 0xJS && python main.py
 
 # Support Me 
 ```bash
-ADDRESS
+0x8ff0bf38a53f5d86d9e7b067d2c07d4abc58cb19
 USDT ( ERC20 )
 ```
 
