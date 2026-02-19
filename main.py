@@ -173,7 +173,7 @@ def process_multiple_urls(file_path, scan_type):
         sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(description='AI-Powered JavaScript Security Tool v3.0')
+    parser = argparse.ArgumentParser(description='AI-Powered JavaScript Security Tool v4.0')
     parser.add_argument('--mode', choices=['sensitive', 'endpoints', 'security', 'config'], 
                        required=True, help='Scan mode')
     parser.add_argument('--url', help='Single URL to scan')
@@ -227,3 +227,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
