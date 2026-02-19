@@ -54,11 +54,33 @@ python main.py --mode config --key "AIzaSyYourActualAPIKeyHere"
 > Mode ( Sensitive Information Scan )
 ```bash
 # Single URL
-python scanner.py --mode sensitive --url "https://example.com/app.js"
+python main.py --mode sensitive --url "https://example.com/app.js"
 
 # Multiple URLs from file
-python scanner.py --mode sensitive --file "urls.txt"
+python main.py --mode sensitive --file "urls.txt"
 ```
+> URLs/Endpoints Extraction
+```bash
+# Single URL
+python main.py --mode endpoints --url "https://example.com/app.js"
+
+# Multiple URLs from file
+python main.py --mode endpoints --file "urls.txt"
+```
+> Security Vulnerability Scan
+```bash
+# Single URL
+python scanner.py --mode security --url "https://example.com/app.js"
+
+# Multiple URLs from file
+python scanner.py --mode security --file "urls.txt"
+```
+
+# Limitations
+- Maximum file size - 800,000 characters per JavaScript file
+- Larger files should be split using the ./chunk.py utility
+- Requires active internet connection for API calls
+- API rate limits apply based on your Gemini plan
 
 # Support Me 
 ```bash
