@@ -32,6 +32,34 @@ echo "GEMINI_API_KEY=your_api_key_here" > .env
 git clone https://github.com/4osp3l/0xJS.git && cd 0xJS && python main.py
 ```
 
+# Usage 
+```bash
+usage: scanner.py [-h] --mode {sensitive,endpoints,security,config} [--url URL] [--file FILE] [--key KEY]
+
+AI-Powered JavaScript Security Tool v3.0
+
+optional arguments:
+  -h, --help            Show this help message and exit
+  --mode {sensitive,endpoints,security,config}
+                        Scan mode (required)
+  --url URL            Single URL to scan
+  --file FILE          File containing list of URLs to scan (one per line)
+  --key KEY            Configure API key (required for config mode)
+```
+
+> Configure API Key
+```bash
+python main.py --mode config --key "AIzaSyYourActualAPIKeyHere"
+```
+> Mode ( Sensitive Information Scan )
+```bash
+# Single URL
+python scanner.py --mode sensitive --url "https://example.com/app.js"
+
+# Multiple URLs from file
+python scanner.py --mode sensitive --file "urls.txt"
+```
+
 # Support Me 
 ```bash
 0x8ff0bf38a53f5d86d9e7b067d2c07d4abc58cb19
