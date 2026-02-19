@@ -1,4 +1,4 @@
-# 0xJS
+# 0xJS v4.0
 0xJS is a AI-powered command-line tool that scans JavaScript files for sensitive information. It can identify API keys, credentials, tokens, and other medium to critical severity secrets with high accuracy ( also scans for potential security issues in JS ). It supports URLs/endpoints extraction, as well as minified-JS analysis.
 
 # Prerequisites
@@ -70,15 +70,15 @@ python main.py --mode endpoints --file "urls.txt"
 > Security Vulnerability Scan
 ```bash
 # Single URL
-python scanner.py --mode security --url "https://example.com/app.js"
+python main.py --mode security --url "https://example.com/app.js"
 
 # Multiple URLs from file
-python scanner.py --mode security --file "urls.txt"
+python main.py --mode security --file "urls.txt"
 ```
 
 # Limitations
 - Maximum file size - 800,000 characters per JavaScript file
-- Larger files should be split using the ./chunk.py utility
+- Larger files should be split using the ./chunk.py utility ( host locally and try again ).
 - Requires active internet connection for API calls
 - API rate limits apply based on your Gemini plan
 
