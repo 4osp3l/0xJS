@@ -184,7 +184,7 @@ def main():
     
     print()
     print("=" * 60)
-    print("  >>> AI-Powered JavaScript Security Tool v3.0 <<<")
+    print("  >>> AI-Powered JavaScript Security Tool v4.0 <<<")
     print("=" * 60)
     
     # Handle API key configuration
@@ -227,6 +227,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
