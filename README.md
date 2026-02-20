@@ -76,6 +76,25 @@ python main.py --mode security --url "https://example.com/app.js"
 python main.py --mode security --file "urls.txt"
 ```
 
+# Discord Webhook Integration
+> The tool can send scan results and notifications to a Discord channel via webhooks.
+
+> Setup Instructions
+- Create a Discord server
+- Open your Discord server settings
+- Go to Integrations → Webhooks
+- Click Create Webhook
+- Name your webhook ( e.g., "0xJS" )
+- Select the channel where notifications should appear ( i.e "general" )
+- Copy the Webhook URL
+
+> Configure the Webhook in the Tool
+
+- Create a .webhook file in the root directory of the tool 
+```bash
+echo "https://discord.com/api/webhooks/your-webhook-url-here" > .webhook
+```
+
 # Limitations
 - Maximum file size - 800,000 characters per JavaScript file
 - Larger files should be split using the ./chunk.py utility ( host locally and try again ).
