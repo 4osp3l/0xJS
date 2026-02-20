@@ -105,7 +105,7 @@ def scan_potential_security_issues(content, url):
         
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=f"Analyze the provided JavaScript code and identify only high-confidence security vulnerabilities such as DOM-based XSS, reflected XSS, stored XSS, open redirects, client-side template injection, unsafe URL handling, insecure postMessage usage, prototype pollution, and dangerous use of eval or Function, and other critical client-side issues; while explicitly excluding Sensitive Information Disclosure, reporting results only when confidence is between 80% and 100%, and outputting only the vulnerable code snippet and its vulnerability type with no additional text before or after the results. Here's the content  {content}"
+            contents=f"Analyze the provided JavaScript code and identify only high-confidence security vulnerabilities such as DOM-based XSS, reflected XSS, stored XSS, open redirects, client-side template injection, unsafe URL handling, insecure postMessage usage, prototype pollution, and dangerous use of eval or Function, and other critical client-side issues; while explicitly excluding Sensitive Information Disclosure, reporting results only when confidence is between 80% and 100%, and outputting only the vulnerable code snippet and its vulnerability type with no additional text before or after the results; also, let's say for example, you spot XSS on line 9, before you point out that there's an XSS vulnerability, make sure to look into other lines for mitigations, if there's a mitigation for the identified potential XSS, do not say it, else say it, this should also apply to to other flaws. Here's the content  {content}"
         )
         print()
         print(response.text)
@@ -227,5 +227,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
