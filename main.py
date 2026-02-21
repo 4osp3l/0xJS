@@ -67,7 +67,7 @@ def scan_javascript(content, url):
         
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=f"Look into this content and see if there's any medium-critical sensitive information, i dont want you to check for low severity issue, focus on medium-critical; if the content contains sensitive information, just write '-[Vulnerable]-' and under it, accurately print the line number along side the sensitive info and give it a severity rating; be very accurate with the severity rating; do not scan for client-side vulnerabilities at all i.e postMessage, RXSS, DOM-XSS, internal IP/PATH/DIR/FILE e.t.c, if it doesn't, just say '-[Not Vulnerable]-' with no other statement or comments, if the JS is minified, break it into human readable javascript format and analyze it as well; at the end of the result, do not ask any other question or say other other thing. Here's the content  {content}"
+            contents=f"Look into this content and see if there's any medium-critical sensitive information, i dont want you to check for low severity issue ( skip false positive info leaks ), focus on medium-critical; if the content contains sensitive information, just write '-[Vulnerable]-' and under it, accurately print the line number along side the sensitive info and give it a severity rating; be very accurate with the severity rating; do not scan for client-side vulnerabilities at all i.e postMessage, RXSS, DOM-XSS, internal IP/PATH/DIR/FILE e.t.c, if it doesn't, just say '-[Not Vulnerable]-' with no other statement or comments, if the JS is minified, break it into human readable javascript format and analyze it as well; at the end of the result, do not ask any other question or say other other thing. Here's the content  {content}"
         )
         print()
         if "-[Vulnerable]-" in response.text:
@@ -94,7 +94,7 @@ def scan_url_endpoints(content, url):
         
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=f"Look into this content and extract all URLs, endpoints in it, say '-[Extracted URLs/endpoints]-' and print them all out, do not say anything else after extracting; give each extracted URLs/endpoints line numbers; if there's no extracted URLs/endpoints, do not say anything, just end it. Here's the content  {content}"
+            contents=f"Look into this content and extract all URLs, endpoints in it, say '-[Extracted URLs/endpoints]-' and print them all out, do not say anything else after extracting; give each extracted URLs/endpoints line numbers; also extract endpoints that looks like this i.e /api/name:name, /:keyword/other_endpoints, e.t.c if there's no extracted URLs/endpoints, do not say anything, just end it. Here's the content  {content}"
         )
         print()
         if "-[Extracted URLs/endpoints]-" in response.text:
@@ -249,6 +249,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
