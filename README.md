@@ -1,4 +1,4 @@
-# 0xJS v4.0
+# 0xJS v4.1
 0xJS is an AI-powered JavaScript Security Tool
 
 # Prerequisites
