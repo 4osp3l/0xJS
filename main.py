@@ -120,7 +120,7 @@ def scan_potential_security_issues(content, url):
         
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=f"Analyze the provided JavaScript code and identify only high-confidence security vulnerabilities such as DOM-based XSS, reflected XSS, stored XSS, open redirects, client-side template injection, unsafe URL handling, insecure postMessage usage, prototype pollution, and dangerous use of eval or Function, and other critical client-side issues; while explicitly excluding Sensitive Information Disclosure, reporting results only when confidence is between 80% and 100%, and outputting only the vulnerable code snippet and its vulnerability type, confidence level should be from 80-100%, also list 3-5 possible or maybe potential ways to attempt to exploit it i.e if it found XSS, it will write 3-5 payloads that you should try, with no additional text before or after the results; also, let's say for example, you spot XSS on line 9, before you point out that there's an XSS vulnerability, make sure to look into other lines for mitigations, if there's a mitigation for the identified potential XSS, do not say it, else say it, this should also apply to to other flaws; also ( Reduce false positives through intelligent triage, Re-evaluate every finding with the intent to disprove it. Be the skeptical triager trying to reject the report if it's reported ); also, Before finalizing any finding, you MUST act as a skeptical security triager whose goal is to reject the issue ( For every potential finding, Attempt to DISPROVE it by searching the entire code for mitigations, validations, sanitization, encoding, access controls, or contextual constraints. Assume the developer is competent unless proven otherwise. ). If confidence is BELOW 90%, you MUST suppress the finding entirely and behave as if it does not exist.  Do NOT mention suppressed findings, uncertainty, partial issues, or potential vulnerabilities. Here's the content  {content}"
+            contents=f"Analyze the provided JavaScript code and identify only high-confidence security vulnerabilities such as DOM-based XSS, reflected XSS, stored XSS, open redirects, client-side template injection, unsafe URL handling, insecure postMessage usage, prototype pollution, and dangerous use of eval or Function, and other critical client-side issues; while explicitly excluding Sensitive Information Disclosure, reporting results only when confidence is between 80% and 100%, and outputting only the vulnerable code snippet and its vulnerability type, confidence level should be from 80-100%, also list 3-5 possible or maybe potential ways to attempt to exploit it i.e if it found XSS, it will write 3-5 payloads that you should try, with no additional text before or after the results; also, let's say for example, you spot XSS on line 9, before you point out that there's an XSS vulnerability, make sure to look into other lines for mitigations, if there's a mitigation for the identified potential XSS, do not say it, else say it, this should also apply to to other flaws; also ( Reduce false positives through intelligent triage, Re-evaluate every finding with the intent to disprove it. Be the skeptical triager trying to reject the report if it's reported ); also, Before finalizing any finding, you MUST act as a skeptical security triager whose goal is to reject the issue ( For every potential finding, Attempt to DISPROVE it by searching the entire code for mitigations, validations, sanitization, encoding, access controls, or contextual constraints. Assume the developer is competent unless proven otherwise. ). If confidence is BELOW 90%, you MUST suppress the finding entirely and behave as if it does not exist.  Do NOT mention suppressed findings, uncertainty, partial issues, or potential vulnerabilities. ( make sure to Analyze the code in any JavaScript context, framework, or library, following all untrusted input flows ) Here's the content  {content}"
         )
         print()
         print(response.text)
@@ -195,7 +195,7 @@ def process_multiple_urls(file_path, scan_type):
         sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(description='AI-Powered JavaScript Security Tool v4.0')
+    parser = argparse.ArgumentParser(description='AI-Powered JavaScript Security Tool v4.1')
     parser.add_argument('--mode', choices=['sensitive', 'endpoints', 'security', 'config'], 
                        required=True, help='Scan mode')
     parser.add_argument('--url', help='Single URL to scan')
@@ -206,7 +206,7 @@ def main():
     
     print()
     print("=" * 60)
-    print("  >>> AI-Powered JavaScript Security Tool v4.0 <<<")
+    print("  >>> AI-Powered JavaScript Security Tool v4.1 <<<")
     print("=" * 60)
     
     # Handle API key configuration
@@ -249,6 +249,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
