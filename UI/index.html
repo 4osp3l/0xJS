@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>0x JS • v4.2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #0f0f1a, #1a0f2e);
+      --glass: rgba(40, 40, 70, 0.38);
+      --glass-border: rgba(180, 160, 255, 0.14);
+      --accent: #a78bfa;
+      --accent-glow: #c4b5fd;
+      --text: #e0e0ff;
+      --text-muted: #a0a0cc;
+      --radius: 28px;
+      --radius-sm: 20px;
+      --shadow: 0 12px 40px rgba(0,0,0,0.5);
+      --error: #ff5555;
+      --success: #55ff55;
+      --warning: #ffaa00;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-attachment: fixed;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 700px;
+      margin: 0 auto;
+      padding-bottom: 160px;
+    }
+
+    header {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; }
+
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin: 20px 0;
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .card:hover { transform: translateY(-6px); }
+
+    .card h2 { margin-bottom: 16px; font-size: 1.3rem; color: var(--accent); }
+
+    .bubble-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 20px;
+      margin: 32px 0;
+    }
+
+    .bubble-btn {
+      aspect-ratio: 1;
+      border-radius: 38%;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1);
+      cursor: pointer;
+    }
+
+    .bubble-btn:hover {
+      transform: scale(1.14) translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+    }
+
+    .bubble-btn:active { transform: scale(0.96); }
+
+    .bubble-btn i {
+      font-size: 2.1rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--glass);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 36px;
+      padding: 14px 40px;
+      display: flex;
+      gap: 48px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.6);
+      z-index: 100;
+      min-width: 320px;
+      max-width: 420px;
+    }
+
+    .tab-item {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-align: center;
+      transition: all 0.25s;
+      cursor: pointer;
+      min-width: 60px;
+    }
+
+    .tab-item.active,
+    .tab-item:hover {
+      color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .tab-item i {
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 18px;
+      margin: 10px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: rgba(60,60,90,0.3);
+      color: white;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 18px;
+      margin: 10px 0;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: linear-gradient(90deg, var(--accent), #8b5cf6);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    button:hover { opacity: 0.92; transform: translateY(-2px); }
+
+    .hidden { display: none !important; }
+
+    #api-key-saved, #webhook-saved {
+      color: #34d399;
+      font-weight: 600;
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    #output, #results-output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      color: #ddd;
+      font-family: ui-monospace, monospace;
+      background: rgba(0,0,0,0.3);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      min-height: 160px;
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.4;
+    }
+
+    .custom-file-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      margin: 12px 0;
+    }
+
+    .custom-file-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--glass);
+      backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.28s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: var(--shadow);
+    }
+
+    .custom-file-btn:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .custom-file-btn i { font-size: 1.4rem; opacity: 0.9; }
+
+    .file-name {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      word-break: break-all;
+    }
+
+    .results-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .results-actions button {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>0x JS</h1>
+      <div class="subtitle">v4.2 • AI-Powered JavaScript Security & Analysis</div>
+    </header>
+
+    <!-- Home Tab -->
+    <div id="tab-home" class="tab-content">
+      <div class="card">
+        <h2>Choose Operation</h2>
+        <div class="bubble-grid">
+          <div class="bubble-btn" data-mode="sensitive">
+            <i class="fas fa-shield-virus"></i>Sensitive
+          </div>
+          <div class="bubble-btn" data-mode="endpoints">
+            <i class="fas fa-link"></i>Endpoints
+          </div>
+          <div class="bubble-btn" data-mode="security">
+            <i class="fas fa-bug"></i>Security
+          </div>
+          <div class="bubble-btn" data-mode="chunk">
+            <i class="fas fa-cut"></i>Chunk
+          </div>
+          <div class="bubble-btn" data-mode="all">
+            <i class="fas fa-rocket"></i>All
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="form-area" style="display:none;">
+        <h2 id="form-title">Operation</h2>
+
+        <div id="single-url" class="hidden">
+          <label>Target JavaScript URL</label>
+          <input type="url" id="url-input" placeholder="https://example.com/app.js"/>
+        </div>
+
+        <div id="chunk-section" class="hidden">
+          <label>Local .js file to chunk</label>
+          <div class="custom-file-wrapper">
+            <label class="custom-file-btn" onclick="pickJsFile()">
+              <i class="fas fa-file-code"></i> Choose JavaScript File
+            </label>
+          </div>
+          <div id="selected-js-path" class="file-name"></div>
+
+          <label style="margin-top: 20px;">Output folder name</label>
+          <input type="text" id="out-dir" value="chunks" placeholder="chunks"/>
+        </div>
+
+        <button id="run-btn">Run →</button>
+        <pre id="output"></pre>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="tab-settings" class="tab-content hidden">
+      <div class="card">
+        <h2>Settings</h2>
+        <div id="api-key-section">
+          <label>Gemini API Key</label>
+          <input type="password" id="api-key-input" placeholder="AIza..." />
+          <button id="save-key-btn">Save Key</button>
+          <div id="api-key-saved" class="hidden">Key saved securely ✓</div>
+        </div>
+        <div id="webhook-section" style="margin-top: 24px;">
+          <label>Webhook URL</label>
+          <input type="url" id="webhook-input" placeholder="https://discord.com/api/webhooks/..." />
+          <button id="save-webhook-btn">Save Webhook</button>
+          <div id="webhook-saved" class="hidden">Webhook saved securely ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Tab -->
+    <div id="tab-results" class="tab-content hidden">
+      <div class="card">
+        <h2>Results</h2>
+        <pre id="results-output">Run a scan from the Home tab to see results here.</pre>
+        <div class="results-actions">
+          <button id="save-html-btn">Save as HTML</button>
+          <button id="clear-results-btn" style="background: linear-gradient(90deg, #ff5555, #cc4444);">Clear Results</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item active" data-tab="home">
+      <i class="fas fa-house"></i>Home
+    </div>
+    <div class="tab-item" data-tab="settings">
+      <i class="fas fa-gear"></i>Settings
+    </div>
+    <div class="tab-item" data-tab="results">
+      <i class="fas fa-list"></i>Results
+    </div>
+  </div>
+
+  <script>
+    let currentMode = null;
+    let selectedJsPath = "";
+    let resultsHistory = "";
+
+    // Tab switching
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.remove('hidden');
+      });
+    });
+
+    // Mode selection
+    document.querySelectorAll('.bubble-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentMode = btn.dataset.mode;
+        document.getElementById('form-title').textContent = btn.textContent.trim();
+
+        document.querySelectorAll('#form-area > div').forEach(d => d.classList.add('hidden'));
+
+        if (['sensitive','endpoints','security','all'].includes(currentMode)) {
+          document.getElementById('single-url').classList.remove('hidden');
+        } else if (currentMode === 'chunk') {
+          document.getElementById('chunk-section').classList.remove('hidden');
+        }
+
+        document.getElementById('form-area').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('form-area').offsetTop - 80, behavior: 'smooth' });
+      });
+    });
+
+    // Pick JS file
+    async function pickJsFile() {
+      if (!window.pywebview?.api) {
+        alert("pywebview API not available.");
+        return;
+      }
+      try {
+        const path = await window.pywebview.api.pick_file();
+        if (path) {
+          selectedJsPath = path;
+          document.getElementById('selected-js-path').textContent = `Selected: ${path.split(/[\\/]/).pop()}`;
+        }
+      } catch (err) {
+        alert("Error picking file: " + err);
+      }
+    }
+
+    // Run button
+    document.getElementById('run-btn').addEventListener('click', async () => {
+      if (!window.pywebview?.api) {
+        document.getElementById('output').textContent = "pywebview API not detected.\nRun with --gui?";
+        return;
+      }
+
+      const output = document.getElementById('output');
+      output.textContent = "Running...\n\n";
+      output.style.color = "var(--accent)";
+
+      try {
+        const url = document.getElementById('url-input').value.trim();
+        let result = "";
+
+        if (currentMode === "all") {
+          if (!url) throw new Error("URL is required");
+          const modes = ['sensitive', 'endpoints', 'security'];
+          for (const mode of modes) {
+            output.textContent += `Running ${mode}...\n`;
+            const params = { mode, url };
+            const res = await window.pywebview.api.run_operation(params);
+            result += `=== ${mode.toUpperCase()} ===\n${res}\n\n`;
+          }
+        } else {
+          let params = { mode: currentMode };
+
+          if (currentMode === "chunk") {
+            if (!selectedJsPath) throw new Error("No JS file selected");
+            params.js_path = selectedJsPath;
+            params.out_dir = document.getElementById('out-dir').value.trim() || "chunks";
+          } else {
+            if (!url) throw new Error("URL is required");
+            params.url = url;
+          }
+
+          const res = await window.pywebview.api.run_operation(params);
+          result = res || "[No output returned]";
+        }
+
+        output.textContent = result;
+        resultsHistory += `\n\n--- ${new Date().toLocaleString()} — ${currentMode.toUpperCase()} ---\n${result}`;
+        document.getElementById('results-output').textContent = resultsHistory.trim();
+      } catch (err) {
+        output.textContent = "ERROR:\n" + (err.message || err);
+        output.style.color = "var(--error)";
+      }
+    });
+
+    // Save API key
+    async function saveApiKey() {
+      const key = document.getElementById('api-key-input').value.trim();
+      if (!key) return alert("Please enter a key");
+      try {
+        const result = await window.pywebview.api.run_operation({ mode: "config", key });
+        document.getElementById('api-key-input').classList.add('hidden');
+        document.getElementById('save-key-btn').classList.add('hidden');
+        document.getElementById('api-key-saved').classList.remove('hidden');
+        document.getElementById('api-key-saved').textContent = result || "Key saved ✓";
+      } catch (err) {
+        alert("Failed to save key: " + err);
+      }
+    }
+
+    document.getElementById('save-key-btn').addEventListener('click', saveApiKey);
+    document.getElementById('api-key-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveApiKey();
+    });
+
+    // Save Webhook
+    async function saveWebhook() {
+      const url = document.getElementById('webhook-input').value.trim();
+      if (!url) return alert("Please enter a webhook URL");
+      try {
+        const result = await window.pywebview.api.configure_webhook({ webhook_url: url });
+        document.getElementById('webhook-input').classList.add('hidden');
+        document.getElementById('save-webhook-btn').classList.add('hidden');
+        document.getElementById('webhook-saved').classList.remove('hidden');
+        document.getElementById('webhook-saved').textContent = result || "Webhook saved ✓";
+      } catch (err) {
+        alert("Failed to save webhook: " + err);
+      }
+    }
+
+    document.getElementById('save-webhook-btn').addEventListener('click', saveWebhook);
+    document.getElementById('webhook-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveWebhook();
+    });
+
+    // Save as HTML – improved version
+    document.getElementById('save-html-btn').addEventListener('click', () => {
+      const content = document.getElementById('results-output').textContent.trim();
+
+      if (!content || content === "Run a scan from the Home tab to see results here.") {
+        alert("No results to save yet. Run at least one scan first.");
+        return;
+      }
+
+      // Escape for HTML + basic highlighting
+      const escaped = content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/\[ ERROR \]/g, '<span style="color:var(--error);font-weight:bold">[ ERROR ]</span>')
+        .replace(/\[ NOT VULNERABLE \]/g, '<span style="color:var(--success);font-weight:bold">[ NOT VULNERABLE ]</span>')
+        .replace(/Vulnerable/g, '<span style="color:var(--warning);font-weight:bold">Vulnerable</span>')
+        .replace(/=== (.*?) ===/g, '<strong style="color:var(--accent);">$1</strong>');
+
+      const fullHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0x JS Scan Results - ${new Date().toLocaleDateString()}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Consolas, monospace;
+      background: #0f0f1a;
+      color: #e0e0ff;
+      padding: 30px;
+      line-height: 1.6;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 { color: #a78bfa; text-align: center; margin-bottom: 10px; }
+    .timestamp { color: #a0a0cc; text-align: center; font-size: 0.95em; margin-bottom: 30px; }
+    pre { 
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #333;
+    }
+    .section { margin: 30px 0; }
+    hr { border: none; border-top: 1px solid #333; margin: 30px 0; }
+  </style>
+</head>
+<body>
+  <h1>0x JS Scan Results</h1>
+  <div class="timestamp">Generated: ${new Date().toLocaleString()}</div>
+  <hr>
+  <div class="section">
+    <pre>${escaped}</pre>
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([fullHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `0xJS-results-${new Date().toISOString().slice(0,10)}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Clear results button
+    document.getElementById('clear-results-btn').addEventListener('click', () => {
+      if (confirm("Clear all results? This cannot be undone.")) {
+        resultsHistory = "";
+        document.getElementById('results-output').textContent = "Run a scan from the Home tab to see results here.";
+      }
+    });
+  </script>
+</body>
+</html>
