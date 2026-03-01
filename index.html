@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>0xJS — AI-Powered JS Secret Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #060810;
+      --surface: #0c1020;
+      --border:  #1a2540;
+      --accent:  #00e5a0;
+      --accent2: #00b8ff;
+      --warn:    #ff5f5f;
+      --text:    #c8d8f0;
+      --muted:   #5a7090;
+      --fd: 'Syne', sans-serif;
+      --fm: 'JetBrains Mono', monospace;
+      /* Fluid side padding — 16px on mobile, 48px on desktop */
+      --pad: clamp(16px, 5vw, 48px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--fm);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR (only real pointer devices) ── */
+    #cursor, #cursor-ring { display: none; }
+    @media (hover:hover) and (pointer:fine) {
+      body { cursor: crosshair; }
+      #cursor {
+        display: block; position: fixed;
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--accent); mix-blend-mode: screen;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%,-50%);
+      }
+      #cursor-ring {
+        display: block; position: fixed;
+        width: 32px; height: 32px; border-radius: 50%;
+        border: 1.5px solid var(--accent); opacity: .55;
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%,-50%);
+        transition: width .25s, height .25s;
+      }
+    }
+
+    /* ── GRID BG ── */
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ══════════════════════
+       NAV
+    ══════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px var(--pad);
+      backdrop-filter: blur(18px);
+      background: rgba(6,8,16,.82);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--fd); font-weight: 900; font-size: 22px;
+      color: var(--accent); letter-spacing: -.5px; text-decoration: none;
+    }
+    .nav-logo span { color: var(--text); }
+
+    .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: .12em; text-transform: uppercase; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      border: 1px solid var(--accent);
+      color: var(--accent) !important; padding: 7px 18px;
+      border-radius: 4px; transition: background .2s, color .2s !important;
+    }
+    .nav-cta:hover { background: var(--accent); color: var(--bg) !important; }
+
+    /* Hamburger — hidden on desktop */
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px;
+      z-index: 210;
+    }
+    .nav-hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text); border-radius: 2px;
+      transition: transform .3s, opacity .3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile full-screen drawer */
+    .mobile-menu {
+      display: none;
+      position: fixed; inset: 0; z-index: 190;
+      background: rgba(6,8,16,.97);
+      backdrop-filter: blur(24px);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 36px;
+      transform: translateX(100%);
+      transition: transform .32s ease;
+    }
+    .mobile-menu.open { transform: translateX(0); }
+    .mobile-menu a {
+      font-family: var(--fd); font-weight: 800; font-size: 30px;
+      color: var(--text); text-decoration: none; letter-spacing: -.5px;
+      transition: color .2s;
+    }
+    .mobile-menu a:active { color: var(--accent); }
+    .mobile-menu .mm-cta {
+      border: 1px solid var(--accent);
+      color: var(--accent) !important;
+      padding: 14px 40px; border-radius: 6px; font-size: 20px !important;
+    }
+
+    /* ══════════════════════
+       HERO
+    ══════════════════════ */
+    #hero {
+      position: relative; z-index: 1;
+      min-height: 100svh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px var(--pad) 64px;
+      overflow: hidden;
+    }
+
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 420px; height: 420px; background: rgba(0,229,160,.08); top: -100px; left: -120px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(0,184,255,.06); bottom: 0; right: -80px; }
+
+    .hero-badge {
+      position: relative; z-index: 1;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.2);
+      border-radius: 100px; padding: 5px 16px;
+      font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 28px;
+      animation: fadeDown .7s ease both;
+      max-width: 100%;
+    }
+    .hero-badge::before {
+      content: ''; width: 6px; height: 6px; flex-shrink: 0;
+      background: var(--accent); border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,229,160,.5); }
+      50%      { box-shadow: 0 0 0 6px rgba(0,229,160,0); }
+    }
+
+    h1 {
+      position: relative; z-index: 1;
+      font-family: var(--fd); font-weight: 900;
+      /* fluid: 42px on 320px screen → 130px on 1200px */
+      font-size: clamp(42px, 13vw, 130px);
+      line-height: .92; letter-spacing: -3px; color: #fff;
+      animation: fadeDown .8s .1s ease both;
+    }
+    h1 .accent { color: var(--accent); }
+    h1 .dim    { color: var(--muted); }
+
+    .hero-sub {
+      position: relative; z-index: 1;
+      max-width: 540px; margin: 22px auto 0;
+      color: var(--muted);
+      font-size: clamp(13px, 2.2vw, 15px);
+      line-height: 1.8;
+      animation: fadeDown .8s .2s ease both;
+    }
+
+    .hero-actions {
+      position: relative; z-index: 1;
+      display: flex; gap: 14px; flex-wrap: wrap;
+      justify-content: center; margin-top: 40px;
+      width: 100%; max-width: 480px;
+      animation: fadeDown .8s .3s ease both;
+    }
+
+    .btn-primary {
+      flex: 1; min-width: 140px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      background: var(--accent); color: var(--bg);
+      font-family: var(--fd); font-weight: 800; font-size: 15px;
+      padding: 14px 28px; border-radius: 6px;
+      border: none; cursor: pointer; text-decoration: none;
+      position: relative; overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,.15);
+      transform: translateX(-100%) skewX(-12deg);
+      transition: transform .35s ease;
+    }
+    .btn-primary:hover::after { transform: translateX(110%) skewX(-12deg); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(0,229,160,.3); }
+
+    .btn-secondary {
+      flex: 1; min-width: 120px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); font-family: var(--fm); font-size: 13px;
+      padding: 14px 22px; border-radius: 6px;
+      cursor: pointer; text-decoration: none;
+      transition: border-color .2s, color .2s;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    .hero-stats {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, auto);
+      gap: 36px;
+      margin-top: 56px;
+      animation: fadeDown .8s .4s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: var(--fd); font-weight: 900;
+      font-size: clamp(24px, 5vw, 38px);
+      color: #fff; line-height: 1;
+    }
+    .stat-num span { color: var(--accent); }
+    .stat-lbl { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+    /* ══════════════════════
+       TERMINAL
+    ══════════════════════ */
+    #terminal-demo {
+      position: relative; z-index: 1;
+      padding: 0 var(--pad) 52px;
+      display: flex; justify-content: center;
+    }
+    .terminal-wrap {
+      width: 100%; max-width: 760px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 32px 64px rgba(0,0,0,.5);
+    }
+    .terminal-bar {
+      display: flex; align-items: center; gap: 7px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,.025);
+      border-bottom: 1px solid var(--border);
+    }
+    .t-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .t-dot.r { background: #ff5f5f; }
+    .t-dot.y { background: #febc2e; }
+    .t-dot.g { background: #28c840; }
+    .t-path { margin-left: 8px; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .terminal-body {
+      padding: 20px 18px;
+      font-size: clamp(10px, 2.4vw, 13px);
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+    .t-line { display: flex; gap: 6px; white-space: nowrap; }
+    .t-prompt { color: var(--accent); user-select: none; flex-shrink: 0; }
+    .t-cmd    { color: #e8f4ff; }
+    .t-out    { color: var(--muted); }
+    .t-key    { color: var(--warn); }
+    .t-val    { color: var(--accent); }
+    .t-head   { color: var(--accent2); font-weight: 700; }
+    .t-cursor { display: inline-block; width: 7px; height: 13px; background: var(--accent); animation: blink 1.1s step-end infinite; vertical-align: middle; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ══════════════════════
+       SHARED SECTION
+    ══════════════════════ */
+    section { position: relative; z-index: 1; padding: 80px var(--pad); }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .section-title { font-family: var(--fd); font-weight: 800; font-size: clamp(26px, 6vw, 54px); color: #fff; line-height: 1.05; letter-spacing: -1.5px; }
+    .section-desc  { color: var(--muted); font-size: clamp(13px, 2vw, 14px); margin-top: 14px; line-height: 1.8; }
+
+    /* ══════════════════════
+       FEATURES
+    ══════════════════════ */
+    .features-head { margin-bottom: 48px; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 1px;
+    }
+    .feat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 30px 26px; position: relative; overflow: hidden;
+      transition: border-color .25s, transform .25s;
+    }
+    .feat-card:hover { border-color: rgba(0,229,160,.3); transform: translateY(-3px); }
+    .feat-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 0 0, rgba(0,229,160,.04), transparent 70%);
+      opacity: 0; transition: opacity .3s;
+    }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 16px; background: rgba(0,229,160,.04); }
+    .feat-title { font-family: var(--fd); font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 8px; }
+    .feat-desc  { color: var(--muted); font-size: 12.5px; line-height: 1.8; }
+    .feat-tag   { display: inline-block; margin-top: 14px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; }
+    .tag-critical { background: rgba(255,95,95,.12); color: var(--warn);   border: 1px solid rgba(255,95,95,.2); }
+    .tag-medium   { background: rgba(254,188,46,.1); color: #febc2e;       border: 1px solid rgba(254,188,46,.2); }
+    .tag-info     { background: rgba(0,184,255,.1);  color: var(--accent2);border: 1px solid rgba(0,184,255,.2); }
+    .tag-new      { background: rgba(0,229,160,.1);  color: var(--accent); border: 1px solid rgba(0,229,160,.2); }
+
+    /* ══════════════════════
+       INSTALL
+    ══════════════════════ */
+    #install { background: var(--surface); }
+
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 52px;
+      align-items: start;
+      margin-top: 48px;
+    }
+    .install-steps { display: flex; flex-direction: column; }
+    .step { display: flex; gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0; width: 30px; height: 30px;
+      border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+      background: rgba(0,229,160,.05); margin-top: 2px;
+    }
+    .step-title { font-family: var(--fd); font-weight: 700; color: #fff; font-size: 15px; margin-bottom: 6px; }
+    .step-desc  { color: var(--muted); font-size: 12px; margin-bottom: 12px; line-height: 1.7; }
+
+    .code-block {
+      background: rgba(0,0,0,.4); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+      font-size: clamp(10px, 1.8vw, 12px); line-height: 1.9;
+      overflow: hidden;
+    }
+    .code-block .cb-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+      font-size: 10px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+    }
+    .copy-btn {
+      flex-shrink: 0; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); font-family: var(--fm); font-size: 10px;
+      padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: all .2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .code-block pre { white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
+    .cb-comment { color: var(--muted); }
+    .cb-kw      { color: var(--accent); }
+    .cb-str     { color: var(--accent2); }
+
+    .install-extras { display: flex; flex-direction: column; gap: 16px; }
+    .prereq-box { background: rgba(0,229,160,.04); border: 1px solid rgba(0,229,160,.15); border-radius: 8px; padding: 18px 20px; }
+    .prereq-box h4 { font-family: var(--fd); font-weight: 700; color: var(--accent); margin-bottom: 10px; font-size: 13px; }
+    .prereq-box ul { list-style: none; color: var(--muted); font-size: 12px; line-height: 2.1; }
+    .prereq-box ul li::before { content: '✦  '; color: var(--accent); }
+
+    /* ══════════════════════
+       CONTRIBUTORS
+    ══════════════════════ */
+    .contrib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .contrib-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px 22px;
+      display: flex; align-items: center; gap: 16px;
+      transition: border-color .25s, transform .25s;
+      text-decoration: none; color: inherit; width: 100%;
+    }
+    .contrib-card:hover { border-color: rgba(0,229,160,.4); transform: translateY(-4px); }
+    .contrib-avatar {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid var(--border); overflow: hidden;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--fd); font-weight: 900; font-size: 18px; color: var(--bg);
+    }
+    .contrib-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .contrib-name  { font-family: var(--fd); font-weight: 700; color: #fff; font-size: 16px; }
+    .contrib-role  { font-size: 10.5px; color: var(--muted); letter-spacing: .09em; text-transform: uppercase; margin-top: 2px; }
+    .contrib-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .badge         { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; }
+    .badge-creator { background: rgba(0,229,160,.1); color: var(--accent); border: 1px solid rgba(0,229,160,.2); }
+    .badge-commit  { background: rgba(0,184,255,.1); color: var(--accent2); border: 1px solid rgba(0,184,255,.2); }
+
+    /* ══════════════════════
+       DISCLAIMER
+    ══════════════════════ */
+    #disclaimer {
+      position: relative; z-index: 1;
+      background: rgba(255,95,95,.03);
+      border-top: 1px solid rgba(255,95,95,.1);
+      border-bottom: 1px solid rgba(255,95,95,.1);
+      padding: 52px var(--pad);
+    }
+    .disclaimer-inner { max-width: 800px; margin: 0 auto; display: flex; gap: 20px; align-items: flex-start; }
+    .disc-icon  { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+    .disc-title { font-family: var(--fd); font-weight: 700; color: var(--warn); font-size: 17px; margin-bottom: 8px; }
+    .disc-text  { color: var(--muted); font-size: 12.5px; line-height: 1.85; }
+
+    /* ══════════════════════
+       FOOTER
+    ══════════════════════ */
+    footer {
+      position: relative; z-index: 1;
+      padding: 44px var(--pad);
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+    }
+    .footer-logo    { font-family: var(--fd); font-weight: 900; font-size: 26px; color: var(--accent); letter-spacing: -1px; }
+    .footer-tagline { font-size: 12px; color: var(--muted); }
+    .footer-links   { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 12px; transition: color .2s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy    { font-size: 10.5px; color: rgba(90,112,144,.4); }
+
+    /* ══════════════════════
+       ANIMATIONS
+    ══════════════════════ */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* ══════════════════════
+       TABLET  ≤ 860px
+    ══════════════════════ */
+    @media (max-width: 860px) {
+      .install-grid { grid-template-columns: 1fr; gap: 36px; }
+    }
+
+    /* ══════════════════════
+       MOBILE  ≤ 640px
+    ══════════════════════ */
+    @media (max-width: 640px) {
+      /* Show hamburger, hide desktop links */
+      .nav-links     { display: none; }
+      .nav-hamburger { display: flex; }
+      .mobile-menu   { display: flex; }
+
+      /* Hero */
+      #hero { padding-top: 88px; padding-bottom: 52px; }
+
+      h1 { font-size: clamp(40px, 12.5vw, 62px); letter-spacing: -2px; }
+
+      .hero-badge { font-size: 10px; padding: 5px 13px; }
+
+      .hero-actions { flex-direction: column; max-width: 100%; }
+      .btn-primary, .btn-secondary { flex: none; width: 100%; font-size: 15px; padding: 15px 20px; }
+
+      .hero-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 18px; width: 100%; margin-top: 40px;
+      }
+      .stat-num { font-size: 28px; }
+
+      /* Terminal */
+      #terminal-demo { padding-left: 12px; padding-right: 12px; }
+      .terminal-body { padding: 14px 12px; font-size: 10.5px; }
+
+      /* Sections */
+      section { padding: 56px var(--pad); }
+      .section-title { font-size: clamp(24px, 8vw, 36px); letter-spacing: -1px; }
+
+      /* Features */
+      .features-grid { grid-template-columns: 1fr; }
+      .features-head { margin-bottom: 32px; }
+      .feat-card { padding: 24px 20px; }
+
+      /* Install */
+      .install-grid { margin-top: 32px; gap: 28px; }
+      .step { gap: 12px; padding: 18px 0; }
+      .step-desc { display: none; } /* hide verbose descs on mobile to save space */
+
+      /* Contributors */
+      .contrib-grid { grid-template-columns: 1fr; }
+      .contrib-card { padding: 18px 16px; gap: 14px; }
+
+      /* Disclaimer */
+      #disclaimer { padding: 40px var(--pad); }
+      .disclaimer-inner { flex-direction: column; gap: 12px; }
+      .disc-text { font-size: 12px; }
+
+      /* Footer */
+      footer { gap: 12px; }
+    }
+
+    /* ══════════════════════
+       TINY  ≤ 375px
+    ══════════════════════ */
+    @media (max-width: 375px) {
+      h1 { font-size: 36px; letter-spacing: -1.5px; }
+      .hero-badge { font-size: 9px; }
+      .mobile-menu a { font-size: 26px; }
+      .stat-num { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a href="#" class="nav-logo">0x<span>JS</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#contributors">Contributors</a></li>
+    <li><a href="https://github.com/4osp3l/0xJS" target="_blank" class="nav-cta">GitHub →</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ─── MOBILE MENU ─── -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#features"     onclick="closeMenu()">Features</a>
+  <a href="#install"      onclick="closeMenu()">Install</a>
+  <a href="#contributors" onclick="closeMenu()">Contributors</a>
+  <a href="https://github.com/4osp3l/0xJS" target="_blank" class="mm-cta" onclick="closeMenu()">GitHub →</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-badge">AI-Powered · Open Source · Security</div>
+
+  <h1>
+    <span class="dim">Scan.</span><br>
+    <span class="accent">Detect.</span><br>
+    <span>Protect.</span>
+  </h1>
+
+  <p class="hero-sub">
+    0xJS is an AI-powered command-line tool that scans JavaScript files for exposed
+    API keys, credentials, tokens, and sensitive secrets — including minified JS.
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://github.com/4osp3l/0xJS" target="_blank" class="btn-primary">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+      </svg>
+      0xJS
+    </a>
+    <a href="#install" class="btn-secondary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+      </svg>
+      Quick Start
+    </a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">35<span>★</span></div>
+      <div class="stat-lbl">GitHub Stars</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span>#</span>1</div>
+      <div class="stat-lbl">AI-Powered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100<span>%</span></div>
+      <div class="stat-lbl">Python</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0<span>x</span></div>
+      <div class="stat-lbl">Limits</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TERMINAL DEMO ─── -->
+<div id="terminal-demo">
+  <div class="terminal-wrap reveal">
+    <div class="terminal-bar">
+      <div class="t-dot r"></div>
+      <div class="t-dot y"></div>
+      <div class="t-dot g"></div>
+      <span class="t-path">~/projects/0xJS — python main.py</span>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">&nbsp;python main.py --target https://example.com/app.js</span></div>
+      <div class="t-line"><span class="t-out">&nbsp;&nbsp;[*] Fetching JavaScript from target...</span></div>
+      <div class="t-line"><span class="t-out">&nbsp;&nbsp;[*] Running AI analysis via Gemini...</span></div>
+      <div class="t-line">&nbsp;</div>
+      <div class="t-line"><span class="t-head">&nbsp;&nbsp;══════ FINDINGS REPORT ══════</span></div>
+      <div class="t-line"><span class="t-key">&nbsp;&nbsp;[CRITICAL]</span><span class="t-out">&nbsp;AWS_SECRET_ACCESS_KEY detected</span></div>
+      <div class="t-line"><span class="t-out">&nbsp;&nbsp;&nbsp;&nbsp;→ Key:&nbsp;</span><span class="t-val">AKIA••••••••••••••••</span></div>
+      <div class="t-line"><span class="t-key">&nbsp;&nbsp;[HIGH]&nbsp;&nbsp;&nbsp;</span><span class="t-out">&nbsp;Firebase API Key exposed</span></div>
+      <div class="t-line"><span class="t-out">&nbsp;&nbsp;&nbsp;&nbsp;→ Key:&nbsp;</span><span class="t-val">AIzaSy••••••••••••••</span></div>
+      <div class="t-line"><span class="t-out">&nbsp;&nbsp;[INFO]&nbsp;&nbsp;&nbsp;Endpoints extracted:&nbsp;</span><span class="t-val">14</span></div>
+      <div class="t-line">&nbsp;</div>
+      <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">&nbsp;</span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FEATURES ─── -->
+<section id="features">
+  <div class="container">
+    <div class="features-head reveal">
+      <div class="section-label">// Capabilities</div>
+      <h2 class="section-title">Everything you need<br>to expose secrets.</h2>
+      <p class="section-desc">Built on Google Gemini AI, 0xJS goes beyond regex patterns to understand context and identify secrets with high precision.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feat-card">
+        <div class="feat-icon">🔑</div>
+        <div class="feat-title">API Key Detection</div>
+        <div class="feat-desc">Identifies exposed API keys from AWS, Firebase, Google, Stripe, Twilio, and dozens more providers with context-aware analysis.</div>
+        <span class="feat-tag tag-critical">Critical Severity</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🧠</div>
+        <div class="feat-title">AI-Powered Analysis</div>
+        <div class="feat-desc">Powered by Google Gemini, 0xJS understands semantic context — not just patterns — to dramatically reduce false positives.</div>
+        <span class="feat-tag tag-new">Gemini AI</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🗜️</div>
+        <div class="feat-title">Minified JS Support</div>
+        <div class="feat-desc">Scans compressed and obfuscated JavaScript files that traditional tools skip — exactly where developers hide things they shouldn't.</div>
+        <span class="feat-tag tag-medium">Advanced</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-title">URL &amp; Endpoint Extraction</div>
+        <div class="feat-desc">Automatically pulls internal API endpoints, hardcoded URLs, and hidden routes from JavaScript source files.</div>
+        <span class="feat-tag tag-info">Recon</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🪙</div>
+        <div class="feat-title">Credential &amp; Token Scanning</div>
+        <div class="feat-desc">Detects JWT tokens, OAuth secrets, database credentials, private keys, and other sensitive auth material buried in JS bundles.</div>
+        <span class="feat-tag tag-critical">Critical Severity</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Simple CLI Interface</div>
+        <div class="feat-desc">Clean, intuitive command-line experience. No complex configuration required — scan a URL or local file in seconds.</div>
+        <span class="feat-tag tag-new">Easy Setup</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Security Vulnerability Scanning</div>
+        <div class="feat-desc">AI-driven detection of vulnerabilities in JS files.</div>
+        <span class="feat-tag tag-new">Easy Setup</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INSTALLATION ─── -->
+<section id="install">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">// Installation</div>
+      <h2 class="section-title">Up and running<br>in under 2 minutes.</h2>
+      <p class="section-desc">Requires Python 3.7+ and a free Google Gemini API key. That's it.</p>
+    </div>
+
+    <div class="install-grid">
+      <div class="install-steps reveal">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Clone the Repository</div>
+            <div class="step-desc">Pull the source code and navigate into the project directory.</div>
+            <div class="code-block">
+              <pre><span class="cb-kw">git</span> clone https://github.com/4osp3l/0xJS
+<span class="cb-kw">cd</span> 0xJS</pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Install Dependencies</div>
+            <div class="step-desc">Install the required Python packages via pip.</div>
+            <div class="code-block">
+              <pre><span class="cb-kw">pip</span> install -q -U google-genai
+<span class="cb-kw">pip</span> install python-dotenv
+<span class="cb-kw">pip</span> install requests</pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Configure API Key</div>
+            <div class="step-desc">Set your Google Gemini API key using the built-in config command.</div>
+            <div class="code-block">
+              <pre><span class="cb-kw">python</span> main.py --mode config \
+  --key <span class="cb-str">"AIzaSyYourActualAPIKeyHere"</span></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Start Scanning</div>
+            <div class="step-desc">Run the tool against any JavaScript file or URL.</div>
+            <div class="code-block">
+              <pre><span class="cb-kw">python</span> main.py</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-extras reveal">
+        <div class="code-block">
+          <div class="cb-header">
+            <span>one-liner</span>
+            <button class="copy-btn" onclick="copyCode(this,'oneliner')">Copy</button>
+          </div>
+          <pre id="oneliner"><span class="cb-kw">git</span> clone https://github.com/4osp3l/0xJS.git <span class="cb-kw">&amp;&amp; cd</span> 0xJS <span class="cb-kw">&amp;&amp; python</span> main.py</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="cb-header">
+            <span>full setup script</span>
+            <button class="copy-btn" onclick="copyCode(this,'fullscript')">Copy</button>
+          </div>
+          <pre id="fullscript"><span class="cb-comment"># Clone repo</span>
+<span class="cb-kw">git</span> clone https://github.com/4osp3l/0xJS
+<span class="cb-kw">cd</span> 0xJS
+
+<span class="cb-comment"># Install dependencies</span>
+<span class="cb-kw">pip</span> install -q -U google-genai
+<span class="cb-kw">pip</span> install python-dotenv
+<span class="cb-kw">pip</span> install requests
+
+<span class="cb-comment"># Configure your API key</span>
+<span class="cb-kw">python</span> main.py --mode config \
+  --key <span class="cb-str">"AIzaSyYourActualAPIKeyHere"</span>
+
+<span class="cb-comment"># Run 0xJS</span>
+<span class="cb-kw">python</span> main.py</pre>
+        </div>
+
+        <div class="prereq-box">
+          <h4>Prerequisites</h4>
+          <ul>
+            <li>Python 3.7 or higher</li>
+            <li>Google Gemini API key (free tier)</li>
+            <li>pip package manager</li>
+            <li>Internet access for URL scanning</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTRIBUTORS ─── -->
+<section id="contributors">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">// Contributors</div>
+      <h2 class="section-title">Built by the community.</h2>
+      <p class="section-desc">0xJS is open source and welcomes contributions. Here are the people who make it happen.</p>
+    </div>
+    <div class="contrib-grid reveal">
+      <a href="https://github.com/4osp3l" target="_blank" class="contrib-card">
+        <div class="contrib-avatar">
+          <img src="https://github.com/4osp3l.png" alt="4osp3l"
+            onerror="this.style.display='none';this.parentNode.textContent='4';" />
+        </div>
+        <div>
+          <div class="contrib-name">4osp3l</div>
+          <div class="contrib-role">Creator &amp; Maintainer</div>
+          <div class="contrib-badges">
+            <span class="badge badge-creator">Creator</span>
+          </div>
+        </div>
+      </a>
+      <a href="https://x.com/karthik__hr" target="_blank" class="contrib-card">
+        <div class="contrib-avatar">
+          <img src="https://github.com/" alt="4osp3l"
+            onerror="this.style.display='none';this.parentNode.textContent='k';" />
+        </div>
+        <div>
+          <div class="contrib-name">karthik__hr</div>
+          <div class="contrib-role"> ---------</div>
+          <div class="contrib-badges">
+            <span class="badge badge-creator">Contributor</span>
+          </div>
+        </div>
+      </a>
+           <a href="https://x.com/ParagonPigeon" target="_blank" class="contrib-card">
+        <div class="contrib-avatar">
+          <img src="https://github.com/" alt="4osp3l"
+            onerror="this.style.display='none';this.parentNode.textContent='p';" />
+        </div>
+        <div>
+          <div class="contrib-name">ParagonPigeon</div>
+          <div class="contrib-role"> ---------</div>
+          <div class="contrib-badges">
+            <span class="badge badge-creator">Contributor</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="https://github.com/4osp3l/0xJS" target="_blank" class="contrib-card"
+         style="border-style:dashed;opacity:.6;">
+        <div class="contrib-avatar"
+             style="background:rgba(0,229,160,.08);border:1.5px dashed var(--border);">
+          <span style="font-size:20px;color:var(--accent);">+</span>
+        </div>
+        <div>
+          <div class="contrib-name" style="color:var(--muted);">You?</div>
+          <div class="contrib-role">Open a PR and join</div>
+          <div class="contrib-badges">
+            <span class="badge" style="background:rgba(0,229,160,.07);color:var(--muted);border:1px dashed var(--border);">Contributor</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DISCLAIMER ─── -->
+<div id="disclaimer">
+  <div class="disclaimer-inner reveal">
+    <div class="disc-icon">⚠️</div>
+    <div>
+      <div class="disc-title">Responsible Use Only</div>
+      <div class="disc-text">
+        0xJS is intended for <strong style="color:var(--text)">authorized security testing and research only</strong>.
+        Users are solely responsible for complying with all applicable laws and obtaining proper
+        authorization before scanning any systems or applications.<br><br>
+        If you discover sensitive information: document the finding, contact the organization's security
+        team, and disclose responsibly. Never exfiltrate or misuse discovered secrets.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo">0xJS</div>
+  <div class="footer-tagline">AI-Powered JavaScript Secret Scanner · Open Source</div>
+  <div class="footer-links">
+    <a href="https://github.com/4osp3l/0xJS" target="_blank">GitHub</a>
+    <a href="https://github.com/4osp3l/0xJS/issues" target="_blank">Issues</a>
+    <a href="https://github.com/4osp3l/0xJS/blob/main/README.md" target="_blank">Docs</a>
+    <a href="#install">Install</a>
+  </div>
+  <div class="footer-copy">© 2026 0xJS . Use responsibly</div>
+</footer>
+
+<script>
+  /* ── MOBILE MENU ── */
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+
+  hamburger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+
+  function closeMenu() {
+    mobileMenu.classList.remove('open');
+    hamburger.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* ── CURSOR (desktop only) ── */
+  if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    const dot  = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+    (function loop(){
+      dot.style.left  = mx+'px'; dot.style.top  = my+'px';
+      rx += (mx-rx)*.12; ry += (my-ry)*.12;
+      ring.style.left = rx+'px'; ring.style.top = ry+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.width='48px'; ring.style.height='48px'; });
+      el.addEventListener('mouseleave', () => { ring.style.width='32px'; ring.style.height='32px'; });
+    });
+  }
+
+  /* ── SCROLL REVEAL ── */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),80); io.unobserve(e.target); } });
+  }, { threshold: .08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ── COPY CODE ── */
+  function copyCode(btn, id) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+      const o = btn.textContent; btn.textContent='Copied!';
+      btn.style.cssText += 'border-color:var(--accent);color:var(--accent)';
+      setTimeout(()=>{ btn.textContent=o; btn.style.borderColor=''; btn.style.color=''; }, 1800);
+    });
+  }
+
+  /* ── TERMINAL TYPEWRITER ── */
+  document.querySelectorAll('.terminal-body .t-line').forEach((l,i)=>{
+    l.style.opacity='0'; l.style.transform='translateX(-6px)';
+    l.style.transition='opacity .28s,transform .28s';
+    setTimeout(()=>{ l.style.opacity='1'; l.style.transform='none'; }, 500+i*190);
+  });
+
+  /* ── CARD STAGGER ── */
+  document.querySelectorAll('.feat-card').forEach((c,i)=>{ c.style.transitionDelay=(i*55)+'ms'; });
+</script>
+</body>
+</html>
